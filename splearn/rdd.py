@@ -5,7 +5,7 @@ import functools
 import numpy as np
 import scipy.sparse as sp
 from pyspark import RDD
-from sklearn.externals import six
+import six
 
 
 def _auto_dtype(elem):

@@ -13,8 +13,16 @@ from sklearn.feature_extraction.text import (CountVectorizer,
                                              TfidfTransformer,
                                              _document_frequency,
                                              _make_int_array)
-from sklearn.utils.fixes import frombuffer_empty
 from sklearn.utils.validation import check_is_fitted
+
+# Define frombuffer_empty function that was removed from sklearn.utils.fixes
+def frombuffer_empty(buf, dtype):
+    """Returns an array from a buffer with the given dtype."""
+    # In newer versions of scikit-learn, _make_int_array returns a list, not a buffer
+    # We need to convert it to a numpy array
+    if isinstance(buf, list):
+        return np.array(buf, dtype=dtype)
+    return np.frombuffer(buf, dtype=dtype)
 
 from ..base import SparkBroadcasterMixin
 from ..rdd import DictRDD
@@ -183,7 +191,11 @@ class SparkCountVectorizer(CountVectorizer, SparkBroadcasterMixin):
             indptr.append(len(j_indices))
 
         j_indices = frombuffer_empty(j_indices, dtype=np.intc)
-        indptr = np.frombuffer(indptr, dtype=np.intc)
+        # Handle both list and buffer cases for indptr
+        if isinstance(indptr, list):
+            indptr = np.array(indptr, dtype=np.intc)
+        else:
+            indptr = np.frombuffer(indptr, dtype=np.intc)
         values = np.ones(len(j_indices))
 
         X = sp.csr_matrix((values, j_indices, indptr),
@@ -604,7 +616,7 @@ class SparkTfidfTransformer(TfidfTransformer, SparkBroadcasterMixin):
         mapper = super(SparkTfidfTransformer, self).transform
 
         if self.use_idf:
-            check_is_fitted(self, '_idf_diag', 'idf vector is not fitted')
+            check_is_fitted(self, ['_idf_diag'])
             mapper = self.broadcast(mapper, Z.context)
 
         return Z.transform(mapper, column='X', dtype=sp.spmatrix)

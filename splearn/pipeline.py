@@ -4,8 +4,8 @@ from functools import reduce
 
 import numpy as np
 import scipy.sparse as sp
-from sklearn.externals import six
-from sklearn.externals.joblib import Parallel, delayed
+import six
+from joblib import Parallel, delayed
 from sklearn.pipeline import FeatureUnion, Pipeline, _name_estimators
 from splearn.rdd import ArrayRDD, DictRDD
 

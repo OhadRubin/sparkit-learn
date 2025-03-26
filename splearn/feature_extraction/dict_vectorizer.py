@@ -3,7 +3,7 @@
 import numpy as np
 import scipy.sparse as sp
 from pyspark import AccumulatorParam
-from sklearn.externals import six
+import six
 from sklearn.feature_extraction import DictVectorizer
 
 from ..base import SparkBroadcasterMixin
